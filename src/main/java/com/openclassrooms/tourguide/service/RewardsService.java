@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import rewardCentral.RewardCentral;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 @Service
 public class RewardsService {
@@ -21,10 +22,15 @@ public class RewardsService {
 	private final int attractionProximityRange = 200;
 	private final GpsUtil gpsUtil;
 	private final RewardCentral rewardsCentral;
+	private final ForkJoinPool forkJoinPool;
 	
 	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
+
+		int processors = Runtime.getRuntime().availableProcessors();
+		int poolSize = processors * 10;
+		forkJoinPool = new ForkJoinPool(poolSize);
 	}
 	
 	public void setProximityBuffer(int proximityBuffer) {
@@ -45,7 +51,13 @@ public class RewardsService {
 			}
 		}
 	}
-	
+
+	public void calculateMultipleUserRewards(List<User> users) {
+		forkJoinPool.submit(() ->
+				users.parallelStream().forEach(this::calculateRewards)
+		).join();
+	}
+
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return (getDistance(attraction, location) <= attractionProximityRange);
 	}
