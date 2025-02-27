@@ -1,12 +1,14 @@
 package com.openclassrooms.tourguide.user;
 
+import gpsUtil.location.VisitedLocation;
+import tripPricer.Provider;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.UUID;
-
-import gpsUtil.location.VisitedLocation;
-import tripPricer.Provider;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class User {
 	private final UUID userId;
@@ -14,8 +16,8 @@ public class User {
 	private String phoneNumber;
 	private String emailAddress;
 	private Date latestLocationTimestamp;
-	private List<VisitedLocation> visitedLocations = new ArrayList<>();
-	private List<UserReward> userRewards = new ArrayList<>();
+	private final CopyOnWriteArrayList<VisitedLocation> visitedLocations = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<UserReward> userRewards = new CopyOnWriteArrayList<>();
 	private UserPreferences userPreferences = new UserPreferences();
 	private List<Provider> tripDeals = new ArrayList<>();
 	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
@@ -57,11 +59,11 @@ public class User {
 		return latestLocationTimestamp;
 	}
 	
-	public void addToVisitedLocations(VisitedLocation visitedLocation) {
+	public void addToVisitedLocations(gpsUtil.location.VisitedLocation visitedLocation) {
 		visitedLocations.add(visitedLocation);
 	}
 	
-	public List<VisitedLocation> getVisitedLocations() {
+	public List<gpsUtil.location.VisitedLocation> getVisitedLocations() {
 		return visitedLocations;
 	}
 	
@@ -70,7 +72,7 @@ public class User {
 	}
 	
 	public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+		if(userRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
 			userRewards.add(userReward);
 		}
 	}
@@ -87,7 +89,7 @@ public class User {
 		this.userPreferences = userPreferences;
 	}
 
-	public VisitedLocation getLastVisitedLocation() {
+	public gpsUtil.location.VisitedLocation getLastVisitedLocation() {
 		return visitedLocations.get(visitedLocations.size() - 1);
 	}
 	
@@ -99,4 +101,18 @@ public class User {
 		return tripDeals;
 	}
 
+	@Override
+	public String toString() {
+		return new StringJoiner(", ", User.class.getSimpleName() + "[", "]")
+				.add("userId=" + userId)
+				.add("userName='" + userName + "'")
+				.add("phoneNumber='" + phoneNumber + "'")
+				.add("emailAddress='" + emailAddress + "'")
+				.add("latestLocationTimestamp=" + latestLocationTimestamp)
+				.add("visitedLocations=" + visitedLocations)
+				.add("userRewards=" + userRewards)
+				.add("userPreferences=" + userPreferences)
+				.add("tripDeals=" + tripDeals)
+				.toString();
+	}
 }

@@ -1,5 +1,7 @@
 package com.openclassrooms.tourguide.user;
 
+import java.util.StringJoiner;
+
 public class UserPreferences {
 	
 	private int attractionProximity = Integer.MAX_VALUE;
@@ -51,4 +53,14 @@ public class UserPreferences {
 		this.numberOfChildren = numberOfChildren;
 	}
 
+	@Override
+	public String toString() {
+		return new StringJoiner(", ", UserPreferences.class.getSimpleName() + "[", "]")
+				.add("attractionProximity=" + attractionProximity)
+				.add("tripDuration=" + tripDuration)
+				.add("ticketQuantity=" + ticketQuantity)
+				.add("numberOfAdults=" + numberOfAdults)
+				.add("numberOfChildren=" + numberOfChildren)
+				.toString();
+	}
 }
