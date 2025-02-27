@@ -12,6 +12,7 @@ import tripPricer.*;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.*;
 
 @Service
@@ -21,12 +22,17 @@ public class TourGuideService {
 	private final RewardsService rewardsService;
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
+	private final ForkJoinPool forkJoinPool;
 	boolean testMode = true;
 
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
-		
+
+		int processors = Runtime.getRuntime().availableProcessors();
+		int poolSize = processors * 10;
+		forkJoinPool = new ForkJoinPool(poolSize);
+
 		Locale.setDefault(Locale.US);
 
 		if (testMode) {
@@ -81,6 +87,20 @@ public class TourGuideService {
 		user.addToVisitedLocations(visitedLocation);
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
+	}
+
+	/**
+	 * Track the location of multiple users
+	 *
+	 * @param users The users
+	 * @return The list of visited locations
+	 */
+	public List<VisitedLocation> trackMultipleUserLocations(List<User> users) {
+		return forkJoinPool.submit(() ->
+				users.parallelStream()
+						.map(this::trackUserLocation)
+						.toList()
+				).join();
 	}
 
 	/**
