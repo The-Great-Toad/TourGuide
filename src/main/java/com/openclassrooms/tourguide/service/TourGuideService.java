@@ -1,5 +1,6 @@
 package com.openclassrooms.tourguide.service;
 
+import com.openclassrooms.tourguide.dto.NearbyAttractionDTO;
 import com.openclassrooms.tourguide.helper.*;
 import com.openclassrooms.tourguide.tracker.*;
 import com.openclassrooms.tourguide.user.*;
@@ -82,14 +83,40 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
-	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
+	/**
+	 * Get the top 5 nearby attractions for a user based on their last visited location
+	 *
+	 * @param user The user
+	 * @return The top 5 nearby attractions
+	 */
+	public List<NearbyAttractionDTO> getTopFiveNearbyAttractions(User user) {
+		VisitedLocation lastVisitedLocation = getUserLocation(user);
+		List<NearbyAttractionDTO> nearbyAttractions = new ArrayList<>();
+
 		for (Attraction attraction : gpsUtil.getAttractions()) {
-			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
+			Location attractionLocation = new Location(attraction.longitude, attraction.latitude);
+			double distance = rewardsService.getDistance(attractionLocation, lastVisitedLocation.location);
+
+			/* If there are less than 5 attractions or the distance is less than the max distance */
+			if (nearbyAttractions.size() < 5 || nearbyAttractions.stream().anyMatch(a -> a.getDistance() > distance)) {
+				/* If there are already 5 attractions, remove the one with the max distance */
+				if (nearbyAttractions.size() == 5) {
+					nearbyAttractions.remove(nearbyAttractions.stream().max(Comparator.comparing(NearbyAttractionDTO::getDistance)).get());
+				}
+				nearbyAttractions.add(
+						new NearbyAttractionDTO(
+								attraction.attractionName,
+								attractionLocation,
+								lastVisitedLocation.location,
+								distance,
+								rewardsService.getRewardPoints(attraction, user)
+						)
+				);
 			}
 		}
 
+		/* Sort nearby attractions by distance */
+		nearbyAttractions.sort(Comparator.comparing(NearbyAttractionDTO::getDistance));
 		return nearbyAttractions;
 	}
 
@@ -123,8 +150,11 @@ public class TourGuideService {
 	private void generateUserLocationHistory(User user) {
 		IntStream.range(0, 3).forEach(i ->
 			user.addToVisitedLocations(
-					new VisitedLocation(user.getUserId(),
-					new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime())
+					new VisitedLocation(
+							user.getUserId(),
+							new Location(generateRandomLatitude(), generateRandomLongitude()),
+							getRandomTime()
+					)
 			)
 		);
 	}
