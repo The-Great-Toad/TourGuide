@@ -60,7 +60,6 @@ jobs:
   test:
     name: Tests & Reports
     runs-on: ubuntu-latest
-    if: build-and-package.outputs.build-status == 'success'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
