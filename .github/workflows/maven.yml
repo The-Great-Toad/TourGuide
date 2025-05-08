@@ -40,8 +40,10 @@ jobs:
 
       - name: Run the Maven clean install phase
         run: mvn --batch-mode --update-snapshots clean install -DskipTests
-
       - run: echo "Maven clean install completed successfully"
+
+      - name: Create and copy the target directory
+        run: mkdir target/ && cp -r target/* target/
 
       - name: Save target/ artifact
         uses: actions/upload-artifact@v4
