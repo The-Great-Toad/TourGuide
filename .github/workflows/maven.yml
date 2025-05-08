@@ -63,7 +63,7 @@ jobs:
 
       - name: Create the reports directory and copy the reports (surefire, jacoco, and surefire-report)
         run: |
-          mkdir reports 
+          mkdir reports && mkdir reports/surefire && mkdir reports/jacoco && mkdir reports/surefire-reports
           cp target/surefire-reports/* reports/surefire/
           cp -r target/site/* reports/jacoco/
           cp -r target/reports/* reports/surefire-reports/
