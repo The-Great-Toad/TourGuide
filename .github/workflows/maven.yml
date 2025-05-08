@@ -40,15 +40,13 @@ jobs:
 
       - name: Run the Maven clean install phase
         run: mvn --batch-mode --update-snapshots clean install -DskipTests
+
       - run: echo "Maven clean install completed successfully"
 
-      - name: Create and copy the target directory
-        run: mkdir target/ && cp -r target/* target/
-
-      - name: Save target/ artifact
+      - name: Upload build target/
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifact
+          name: build-target
           path: target/
 
   test:
@@ -100,7 +98,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: build-artifact
+          name: build-target
           path: target/
 
       - name: Run the cmd sonar:sonar
@@ -109,7 +107,7 @@ jobs:
         run: |
           echo "Sonarqube token is available: $SONARQUBE_TOKEN"
           mvn --batch-mode --update-snapshots sonar:sonar 
-          -Dsonar.java.binaries=target/classes 
+          -Dsonar.java.binaries=classes 
           -Dsonar.host.url=https://sonarcloud.io 
           -Dsonar.token=$SONAR_TOKEN
 
