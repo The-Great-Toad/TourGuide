@@ -91,13 +91,13 @@ jobs:
 
       - name: Run the cmd sonar:sonar
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
         run: |
           mvn --batch-mode --update-snapshots sonar:sonar 
           -Dsonar.projectKey=TourGuide 
           -Dsonar.organization=the-great-toad 
           -Dsonar.java.binaries=target/classes 
           -Dsonar.host.url=https://sonarcloud.io 
-          -Dsonar.token=SONAR_TOKEN
+          -Dsonar.token=SONARQUBE_TOKEN
 
       - run: echo "Sonarqube analysis completed successfully"
