@@ -107,8 +107,6 @@ jobs:
         run: |
           echo "Sonarqube token is available: $SONARQUBE_TOKEN"
           mvn --batch-mode --update-snapshots sonar:sonar 
-          -Dsonar.projectKey=TourGuide 
-          -Dsonar.organization=the-great-toad 
           -Dsonar.java.binaries=target/classes 
           -Dsonar.host.url=https://sonarcloud.io 
           -Dsonar.token=$SONAR_TOKEN
