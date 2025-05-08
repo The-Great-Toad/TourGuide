@@ -43,6 +43,12 @@ jobs:
 
       - run: echo "Maven clean install completed successfully"
 
+      - name: Save target/ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: target/
+
   test:
     name: Tests & Reports
     runs-on: ubuntu-latest
@@ -89,10 +95,17 @@ jobs:
           distribution: 'temurin'
           cache: maven # Cache Maven dependencies with actions/setup-java
 
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: target/
+
       - name: Run the cmd sonar:sonar
         env:
           SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
         run: |
+          echo "Sonarqube token is available: $SONARQUBE_TOKEN"
           mvn --batch-mode --update-snapshots sonar:sonar 
           -Dsonar.projectKey=TourGuide 
           -Dsonar.organization=the-great-toad 
