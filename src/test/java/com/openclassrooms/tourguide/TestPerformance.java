@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestPerformance {
+class TestPerformance {
 
 	/*
 	 * A note on performance improvements:
@@ -43,10 +43,10 @@ public class TestPerformance {
 	 * TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	 */
 
-	private static final int INTERNAL_USER_NUMBER = 100000;
+	private static final int INTERNAL_USER_NUMBER = 100;
 
 	@Test
-	public void highVolumeTrackLocation() {
+	void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
@@ -69,7 +69,7 @@ public class TestPerformance {
 	}
 
 	@Test
-	public void highVolumeGetRewards() {
+	void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import rewardCentral.RewardCentral;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 
 @Service
 public class RewardsService {
@@ -20,9 +22,9 @@ public class RewardsService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 
 	// proximity in miles
-    private static final int defaultProximityBuffer = 10;
-	private static int proximityBuffer = defaultProximityBuffer;
-	private static final int attractionProximityRange = 200;
+    private static final int DEFAULT_PROXIMITY_BUFFER = 10;
+	private static int proximityBuffer = DEFAULT_PROXIMITY_BUFFER;
+	private static final int ATTRACTION_PROXIMITY_RANGE = 200;
 
 	private final GpsUtil gpsUtil;
 	private final RewardCentral rewardsCentral;
@@ -32,30 +34,40 @@ public class RewardsService {
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
 
+		// Init threads pool size
 		int processors = Runtime.getRuntime().availableProcessors();
-//		int poolSize = processors * 10;
-		// Minimum pool size of 50 threads (for CICD)
-		int poolSize = Math.max(50, processors * 10);
 		log.info("Available processors: {}", processors);
-		forkJoinPool = new ForkJoinPool(poolSize);
+
+		// Minimum pool size of 50 threads (for CICD)
+		int parallelism = Math.max(50, processors * 10);
+
+		forkJoinPool = new ForkJoinPool(parallelism);
+		log.info("Initialized ForkJoinPool with parallelism: {}", parallelism);
 	}
 	
-	public void setProximityBuffer(int proximityBuffer) {
+	public static void setProximityBuffer(int proximityBuffer) {
 		RewardsService.proximityBuffer = proximityBuffer;
 	}
 	
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
-		
-		for(VisitedLocation visitedLocation : userLocations) {
-			for(Attraction attraction : attractions) {
-				if(user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
-					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-					}
-				}
-			}
+
+		Set<String> rewardedAttractions = user.getUserRewards().stream()
+				.map(r -> r.attraction.attractionName)
+				.collect(Collectors.toSet());
+
+		for (VisitedLocation visitedLocation : userLocations) {
+			attractions.stream()
+					// Filter out attractions already rewarded
+					.filter(attraction -> !rewardedAttractions.contains(attraction.attractionName))
+					// Filter attractions near user's visited location
+					.filter(attraction -> nearAttraction(visitedLocation, attraction))
+					// Calculate rewards and add them to the user
+					.forEach(attraction -> {
+						int rewardPoints = getRewardPoints(attraction, user);
+						user.addUserReward(new UserReward(visitedLocation, attraction, rewardPoints));
+					});
 		}
 	}
 
@@ -66,7 +78,7 @@ public class RewardsService {
 	}
 
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-		return (getDistance(attraction, location) <= attractionProximityRange);
+		return (getDistance(attraction, location) <= ATTRACTION_PROXIMITY_RANGE);
 	}
 	
 	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {

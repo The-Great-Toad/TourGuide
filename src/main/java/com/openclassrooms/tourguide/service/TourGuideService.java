@@ -24,6 +24,7 @@ public class TourGuideService {
 	public final Tracker tracker;
 	private final ForkJoinPool forkJoinPool;
 	boolean testMode = true;
+	public static final Random RANDOM = new Random();
 
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
@@ -71,7 +72,7 @@ public class TourGuideService {
 	public List<Provider> getTripDeals(User user) {
 		int cumulativeRewardPoints = user.getUserRewards().stream().mapToInt(UserReward::getRewardPoints).sum();
 		List<Provider> providers = tripPricer.getPrice(
-				tripPricerApiKey,
+				TEST_SERVER_API_KEY,
 				user.getUserId(),
 				user.getUserPreferences().getNumberOfAdults(),
 				user.getUserPreferences().getNumberOfChildren(),
@@ -83,8 +84,11 @@ public class TourGuideService {
 	}
 
 	public VisitedLocation trackUserLocation(User user) {
+		logger.info("Tracking user {}", user.getUserName());
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 		user.addToVisitedLocations(visitedLocation);
+		logger.info("User visited location {}", user.getVisitedLocations().size());
+		logger.info("User rewards {}", user.getUserRewards().size());
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
 	}
@@ -121,7 +125,10 @@ public class TourGuideService {
 			if (nearbyAttractions.size() < 5 || nearbyAttractions.stream().anyMatch(a -> a.getDistance() > distance)) {
 				/* If there are already 5 attractions, remove the one with the max distance */
 				if (nearbyAttractions.size() == 5) {
-					nearbyAttractions.remove(nearbyAttractions.stream().max(Comparator.comparing(NearbyAttractionDTO::getDistance)).get());
+					nearbyAttractions.remove(nearbyAttractions
+							.stream()
+							.max(Comparator.comparing(NearbyAttractionDTO::getDistance))
+							.get());
 				}
 				nearbyAttractions.add(
 						new NearbyAttractionDTO(
@@ -144,12 +151,12 @@ public class TourGuideService {
 		Runtime.getRuntime().addShutdownHook(new Thread(tracker::stopTracking));
 	}
 
-	/**********************************************************************************
+	/* *********************************************************************************
 	 * 
 	 * Methods Below: For Internal Testing
 	 * 
 	 **********************************************************************************/
-	private static final String tripPricerApiKey = "test-server-api-key";
+	private static final String TEST_SERVER_API_KEY = "test-server-api-key";
 	// Database connection will be used for external users, but for testing purposes
 	// internal users are provided and stored in memory
 	private final Map<String, User> internalUserMap = new HashMap<>();
@@ -164,7 +171,7 @@ public class TourGuideService {
 
 			internalUserMap.put(userName, user);
 		});
-		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
+		logger.debug("Created {} internal test users.", InternalTestHelper.getInternalUserNumber());
 	}
 
 	private void generateUserLocationHistory(User user) {
@@ -182,17 +189,17 @@ public class TourGuideService {
 	private double generateRandomLongitude() {
 		double leftLimit = -180;
 		double rightLimit = 180;
-		return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+		return leftLimit + RANDOM.nextDouble() * (rightLimit - leftLimit);
 	}
 
 	private double generateRandomLatitude() {
 		double leftLimit = -85.05112878;
 		double rightLimit = 85.05112878;
-		return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+		return leftLimit + RANDOM.nextDouble() * (rightLimit - leftLimit);
 	}
 
 	private Date getRandomTime() {
-		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
+		LocalDateTime localDateTime = LocalDateTime.now().minusDays(RANDOM.nextInt(30));
 		return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
 	}
 
