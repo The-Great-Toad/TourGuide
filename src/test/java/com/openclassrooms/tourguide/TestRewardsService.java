@@ -8,7 +8,6 @@ import com.openclassrooms.tourguide.user.UserReward;
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import rewardCentral.RewardCentral;
 
@@ -51,7 +50,6 @@ class TestRewardsService {
 	}
 
 	@Test
-	@Disabled("Disabled for performance testing") // TODO: remove
 	void nearAllAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
@@ -65,6 +63,8 @@ class TestRewardsService {
 		rewardsService.calculateRewards(user);
 		List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
 		tourGuideService.tracker.stopTracking();
+
+		RewardsService.setProximityBuffer(10); // reset to default
 
 		assertEquals(gpsUtil.getAttractions().size(), userRewards.size());
 	}
