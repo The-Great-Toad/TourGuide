@@ -19,6 +19,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<surefire.version>3.5.3</surefire.version>
+		<surefire.argLine>${argLine}</surefire.argLine>
 		<jacoco.version>0.8.13</jacoco.version>
 		<sonarqube.version>5.1.0.4751</sonarqube.version>
 		<sonar.organization>the-great-toad</sonar.organization>
@@ -94,6 +95,9 @@
 				<version>${surefire.version}</version>
 				<configuration>
 					<argLine>-Duser.language=en -Duser.region=US</argLine>
+					<argLine>${surefire.argLine}</argLine>
+					<forkCount>1</forkCount>
+					<reuseForks>true</reuseForks>
 				</configuration>
 			</plugin>
 
@@ -102,15 +106,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>${surefire.version}</version>
-				<executions>
-					<execution>
-						<id>generate-surefire-report</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 
 			<!--      Jacoco      -->
