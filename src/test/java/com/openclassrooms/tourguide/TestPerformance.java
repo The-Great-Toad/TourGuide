@@ -43,7 +43,7 @@ class TestPerformance {
 	 * TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	 */
 
-	private static final int INTERNAL_USER_NUMBER = 100;
+	private static final int INTERNAL_USER_NUMBER = 1000;
 
 	@Test
 	void highVolumeTrackLocation() {
