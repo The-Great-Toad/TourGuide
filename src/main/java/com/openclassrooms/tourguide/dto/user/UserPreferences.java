@@ -1,4 +1,4 @@
-package com.openclassrooms.tourguide.user;
+package com.openclassrooms.tourguide.dto.user;
 
 import java.util.StringJoiner;
 
@@ -9,9 +9,6 @@ public class UserPreferences {
 	private int ticketQuantity = 1;
 	private int numberOfAdults = 1;
 	private int numberOfChildren = 0;
-	
-	public UserPreferences() {
-	}
 	
 	public void setAttractionProximity(int attractionProximity) {
 		this.attractionProximity = attractionProximity;

@@ -1,7 +1,7 @@
 package com.openclassrooms.tourguide.service;
 
-import com.openclassrooms.tourguide.user.User;
-import com.openclassrooms.tourguide.user.UserReward;
+import com.openclassrooms.tourguide.dto.user.User;
+import com.openclassrooms.tourguide.dto.user.UserReward;
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
@@ -33,22 +33,39 @@ public class RewardsService {
 	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
+		this.forkJoinPool = initForkJoinPool();
+	}
 
+	/**
+	 * Initializes the ForkJoinPool with a size based on the number of available processors.
+	 * The pool size is set to a minimum of 50 threads to ensure sufficient parallelism
+	 * even in CI/CD environments with limited resources.
+	 *
+	 * @return A ForkJoinPool instance with the specified parallelism.
+	 */
+	private ForkJoinPool initForkJoinPool() {
 		// Init threads pool size
 		int processors = Runtime.getRuntime().availableProcessors();
 		log.info("Available processors: {}", processors);
 
 		// Minimum pool size of 50 threads (for CICD)
 		int parallelism = Math.max(50, processors * 10);
+		log.info("Initialising ForkJoinPool with parallelism: {}", parallelism);
 
-		forkJoinPool = new ForkJoinPool(parallelism);
-		log.info("Initialized ForkJoinPool with parallelism: {}", parallelism);
+		return new ForkJoinPool(parallelism);
 	}
-	
+
 	public static void setProximityBuffer(int proximityBuffer) {
 		RewardsService.proximityBuffer = proximityBuffer;
 	}
-	
+
+	/**
+	 * Calculates rewards for a user based on their visited locations and nearby attractions.
+	 * It filters out already rewarded attractions and checks if they are nearby.
+	 * If so, it calculates the reward points and adds them to the user's rewards.
+	 *
+	 * @param user The user for whom to calculate rewards.
+	 */
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
@@ -71,6 +88,12 @@ public class RewardsService {
 		}
 	}
 
+	/**
+	 * Calculates rewards for multiple users in parallel.
+	 * It uses the ForkJoinPool to process each user concurrently.
+	 *
+	 * @param users The list of users for whom to calculate rewards.
+	 */
 	public void calculateMultipleUserRewards(List<User> users) {
 		forkJoinPool.submit(() ->
 				users.parallelStream().forEach(this::calculateRewards)

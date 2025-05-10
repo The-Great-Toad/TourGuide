@@ -1,38 +1,52 @@
 package com.openclassrooms.tourguide.service;
 
 import com.openclassrooms.tourguide.dto.NearbyAttractionDTO;
-import com.openclassrooms.tourguide.helper.*;
-import com.openclassrooms.tourguide.tracker.*;
-import com.openclassrooms.tourguide.user.*;
-import gpsUtil.*;
-import gpsUtil.location.*;
-import org.slf4j.*;
-import org.springframework.stereotype.*;
-import tripPricer.*;
+import com.openclassrooms.tourguide.dto.user.User;
+import com.openclassrooms.tourguide.dto.user.UserReward;
+import com.openclassrooms.tourguide.helper.InternalTestHelper;
+import com.openclassrooms.tourguide.tracker.Tracker;
+import gpsUtil.GpsUtil;
+import gpsUtil.location.Attraction;
+import gpsUtil.location.Location;
+import gpsUtil.location.VisitedLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import tripPricer.Provider;
+import tripPricer.TripPricer;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
-import java.util.stream.*;
+import java.util.stream.IntStream;
 
 @Service
 public class TourGuideService {
-	private final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
+	private static final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
+
 	private final GpsUtil gpsUtil;
 	private final RewardsService rewardsService;
-	private final TripPricer tripPricer = new TripPricer();
+	private final TripPricer tripPricer;
 	public final Tracker tracker;
 	private final ForkJoinPool forkJoinPool;
 	boolean testMode = true;
-	public static final Random RANDOM = new Random();
+	public final Random random;
 
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
-
-		int processors = Runtime.getRuntime().availableProcessors();
-		int poolSize = processors * 10;
-		forkJoinPool = new ForkJoinPool(poolSize);
+		this.tripPricer = new TripPricer();
+		this.forkJoinPool = initForkJoinPool();
+		this.random = new Random();
 
 		Locale.setDefault(Locale.US);
 
@@ -46,13 +60,25 @@ public class TourGuideService {
 		addShutDownHook();
 	}
 
+	/**
+	 * Initializes the ForkJoinPool with a size based on the number of available processors.
+	 *
+	 * @return A ForkJoinPool instance with the specified parallelism.
+	 */
+	private ForkJoinPool initForkJoinPool() {
+		int processors = Runtime.getRuntime().availableProcessors();
+		int poolSize = processors * 10;
+		return new ForkJoinPool(poolSize);
+	}
+
 	public List<UserReward> getUserRewards(User user) {
 		return user.getUserRewards();
 	}
 
 	public VisitedLocation getUserLocation(User user) {
-        return (user.getVisitedLocations().isEmpty()) ? trackUserLocation(user)
-				: user.getLastVisitedLocation();
+        return user.getVisitedLocations().isEmpty() ?
+				trackUserLocation(user) :
+				user.getLastVisitedLocation();
 	}
 
 	public User getUser(String userName) {
@@ -91,10 +117,10 @@ public class TourGuideService {
 	}
 
 	/**
-	 * Track the location of multiple users
+	 * Track the location of multiple users in parallel using ForkJoinPool
 	 *
-	 * @param users The users
-	 * @return The list of visited locations
+	 * @param users The users to track
+	 * @return The list of visited locations for each user
 	 */
 	public List<VisitedLocation> trackMultipleUserLocations(List<User> users) {
 		return forkJoinPool.submit(() ->
@@ -186,17 +212,17 @@ public class TourGuideService {
 	private double generateRandomLongitude() {
 		double leftLimit = -180;
 		double rightLimit = 180;
-		return leftLimit + RANDOM.nextDouble() * (rightLimit - leftLimit);
+		return leftLimit + random.nextDouble() * (rightLimit - leftLimit);
 	}
 
 	private double generateRandomLatitude() {
 		double leftLimit = -85.05112878;
 		double rightLimit = 85.05112878;
-		return leftLimit + RANDOM.nextDouble() * (rightLimit - leftLimit);
+		return leftLimit + random.nextDouble() * (rightLimit - leftLimit);
 	}
 
 	private Date getRandomTime() {
-		LocalDateTime localDateTime = LocalDateTime.now().minusDays(RANDOM.nextInt(30));
+		LocalDateTime localDateTime = LocalDateTime.now().minusDays(random.nextInt(30));
 		return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
 	}
 
