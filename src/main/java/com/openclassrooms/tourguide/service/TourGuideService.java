@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class TourGuideService {
 		this.rewardsService = rewardsService;
 		this.tripPricer = new TripPricer();
 		this.forkJoinPool = initForkJoinPool();
-		this.random = new Random();
+		this.random = new SecureRandom();
 
 		Locale.setDefault(Locale.US);
 
