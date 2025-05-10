@@ -3,7 +3,7 @@ package com.openclassrooms.tourguide;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.service.RewardsService;
 import com.openclassrooms.tourguide.service.TourGuideService;
-import com.openclassrooms.tourguide.user.User;
+import com.openclassrooms.tourguide.dto.user.User;
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestPerformance {
+class TestPerformance {
 
 	/*
 	 * A note on performance improvements:
@@ -46,7 +46,7 @@ public class TestPerformance {
 	private static final int INTERNAL_USER_NUMBER = 100000;
 
 	@Test
-	public void highVolumeTrackLocation() {
+	void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
@@ -69,7 +69,7 @@ public class TestPerformance {
 	}
 
 	@Test
-	public void highVolumeGetRewards() {
+	void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 

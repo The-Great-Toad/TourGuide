@@ -4,7 +4,7 @@ import com.openclassrooms.tourguide.dto.NearbyAttractionDTO;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.service.RewardsService;
 import com.openclassrooms.tourguide.service.TourGuideService;
-import com.openclassrooms.tourguide.user.User;
+import com.openclassrooms.tourguide.dto.user.User;
 import gpsUtil.GpsUtil;
 import gpsUtil.location.VisitedLocation;
 import org.junit.jupiter.api.Test;
@@ -17,10 +17,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestTourGuideService {
+class TestTourGuideService {
 
 	@Test
-	public void getUserLocation() {
+	void getUserLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -33,7 +33,7 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void addUser() {
+	void addUser() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -55,7 +55,7 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void getAllUsers() {
+	void getAllUsers() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -76,7 +76,7 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void trackUser() {
+	void trackUser() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -91,7 +91,7 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void getNearbyAttractions() {
+	void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
@@ -107,7 +107,7 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void getTripDeals() {
+	void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);

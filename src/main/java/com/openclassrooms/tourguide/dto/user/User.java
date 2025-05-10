@@ -1,4 +1,4 @@
-package com.openclassrooms.tourguide.user;
+package com.openclassrooms.tourguide.dto.user;
 
 import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
